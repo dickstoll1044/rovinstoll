@@ -21,6 +21,13 @@ class class_fma_admin_menus {
 	public function load_menus() {
 		
 		$fmaPer = $this->fmaPer();
+		    
+			/** Authorizing only super admin to manage settings */
+		    $subPer = 'manage_options';
+		    if ( is_multisite() && !is_network_admin() ) {
+			   $subPer = 'manage_network';	
+			   $fmaPer = $this->networkPer();
+		    }
 
 		 add_menu_page(
 			__( 'File Manager', 'file-manager-advanced' ),
@@ -31,8 +38,8 @@ class class_fma_admin_menus {
 			plugins_url( 'assets/icon/fma.png', __FILE__ ),
 			4
 			);
-	add_submenu_page( 'file_manager_advanced_ui', 'Settings', 'Settings', 'manage_options', 'file_manager_advanced_controls', array(&$this, 'file_manager_advanced_controls'));
-	add_submenu_page( 'file_manager_advanced_ui', 'Shortcodes', 'Shortcodes', 'manage_options', 'file_manager_advanced_shortcodes', array(&$this, 'file_manager_advanced_shortcodes'));
+	add_submenu_page( 'file_manager_advanced_ui', 'Settings', 'Settings', $subPer, 'file_manager_advanced_controls', array(&$this, 'file_manager_advanced_controls'));
+	add_submenu_page( 'file_manager_advanced_ui', 'Shortcodes', 'Shortcodes', $subPer, 'file_manager_advanced_shortcodes', array(&$this, 'file_manager_advanced_shortcodes'));
 	}
 	/** 
 	 * Fma permissions
@@ -56,6 +63,29 @@ class class_fma_admin_menus {
 			$fmaPer = 'manage_options';
 		}
 		return $fmaPer;
+	}
+	/**
+	 * Fma - Network Permissions
+	 */
+	public function networkPer() {
+		$settings = $this->get();
+		$user = wp_get_current_user();
+		$allowed_fma_user_roles = isset($settings['fma_user_roles']) ? $settings['fma_user_roles'] : array();
+
+		$fma_user_roles = $allowed_fma_user_roles;
+
+		$checkUserRoleExistance = array_intersect($fma_user_roles, $user->roles);
+
+		if(count($checkUserRoleExistance) > 0 ) {
+			if(!in_array('administrator', $checkUserRoleExistance)) {
+				$fmaPer = 'read';
+			} else {
+				$fmaPer = 'manage_options';
+			}
+		} else {
+			$fmaPer = 'manage_network';
+		}
+		return $fmaPer;	
 	}
 	/**
 	* Diaplying AFM
@@ -89,10 +119,16 @@ class class_fma_admin_menus {
 	   if(isset($_POST['submit']) && wp_verify_nonce( $_POST['_fmaform'], 'fmaform' )) {
 		    _e('Saving options, Please wait...','file-manager-advanced');
 		   $save = array();
-		   $save['fma_user_roles'] = isset($_POST['fma_user_role']) ? array_map('sanitize_text_field',$_POST['fma_user_role']) : array('administrator');
+		   $defaultRole = array('administrator');
+		   if(is_multisite()) {
+			$defaultRole = array();
+		   }
+		   $public_dir = isset($_POST['public_path']) ? sanitize_text_field($_POST['public_path']) : '';
+		   $save['fma_user_roles'] = isset($_POST['fma_user_role']) ? array_map('sanitize_text_field',$_POST['fma_user_role']) : $defaultRole;
 		   $save['fma_theme'] = isset($_POST['fma_theme']) ? sanitize_text_field($_POST['fma_theme']) : 'light';
 		   $save['fma_locale'] = isset($_POST['fma_locale']) ? sanitize_text_field($_POST['fma_locale']) : 'en';
-		   $save['public_path'] = isset($_POST['public_path']) ? sanitize_text_field($_POST['public_path']) : '';
+		   /* Directory Traversal fix @220723 */
+		   $save['public_path'] = $this->afm_sanitize_directory($public_dir);
            $save['public_url'] = isset($_POST['public_url']) ? sanitize_text_field($_POST['public_url']) : '';
 		   //25122022
 		   $save['upload_max_size'] = isset($_POST['upload_max_size']) ? sanitize_text_field($_POST['upload_max_size']) : '0';
@@ -109,6 +145,15 @@ class class_fma_admin_menus {
 		  }
 	   }
    }
+   /**
+	* Sanitize directory path
+    */
+	public function afm_sanitize_directory($path = '') {
+        if(!empty($path)) {
+			$path = str_replace('..', '', htmlentities(trim($path)));
+		}
+		return $path;	
+	}
    /**
 	* Getting Options
     */

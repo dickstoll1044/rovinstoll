@@ -38,7 +38,19 @@ $roles = $this->wpUserRoles();
 <td>
 <?php 
 unset($roles['administrator']); ?>
+<?php if(is_multisite()): 
+		$checked = '';
+		if(isset($settings['fma_user_roles'])):
+		if(in_array('administrator', $settings['fma_user_roles'])) {
+		   $checked = 'checked=checked';
+		}
+		endif;
+	?>
+<input type="checkbox" value="superadmin" name="fma_user_role[]" checked="checked" disabled="disabled" /> <?php _e('Super Admin (Default)','file-manager-advanced');?> <br/>
+<input type="checkbox" value="administrator" name="fma_user_role[]" <?php echo esc_attr($checked); ?> /> <?php _e('Administrator','file-manager-advanced');?> <br/>
+<?php else : ?>
 <input type="checkbox" value="administrator" name="fma_user_role[]" checked="checked" disabled="disabled" /> <?php _e('Administrator (Default)','file-manager-advanced');?> <br/>
+<?php endif; ?>
 <?php
 foreach($roles as $key => $role) { 
 	$checked = '';

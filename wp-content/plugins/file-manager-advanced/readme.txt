@@ -2,9 +2,9 @@
 Contributors: modalweb,filemanager
 Tags: file manager, wordpress file manager, wp file manager, file manager pro, document management,file-manager, wp-filemanager, elfinder, wp-file-manager, ftp, filemanager
 Requires at least: 4.0
-Tested up to: 6.2.2
+Tested up to: 6.4.1
 Requires PHP: 7.0
-Stable tag: 5.1
+Stable tag: 5.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -111,6 +111,23 @@ Yes you can, go to settings, change root path.
 
 
 == Changelog ==
+
+= 5.2 (03 Dec, 2023) =
+
+* Compatible with wp 6.4
+* Upload issue in firefox fixes
+* Directory traversal fixes
+
+= 5.1.2 (10 Sep, 2023) =
+
+* Compatible with wp 6.3.1
+* Network sites access permitted to super admins and authorized roles.
+
+= 5.1.1 (09 Aug, 2023) =
+
+* Compatible with wp 6.3
+* Directory Traversal bug fixes
+* Network sites access permitted to super admins.
 
 = 5.1 (11 June, 2023) =
 

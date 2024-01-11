@@ -56,6 +56,8 @@ class class_fma_shortcode {
     
 			 $pa = isset($_REQUEST['path']) ? sanitize_text_field($_REQUEST['path']) : '';
 			 $root = site_url();
+			 /** directory traversal @220723 */
+			 $pa = $this->afm_sanitize_directory($pa);
 			 if( !empty($pa) && $pa != '%' && $pa != '$') {
 				 $path = ABSPATH.$pa;
 				 $root = site_url().'/'.$pa;
@@ -210,6 +212,15 @@ $fmaconnector->run();
  }
  die;
 }
+/**
+	* Sanitize directory path
+    */
+	public function afm_sanitize_directory($path = '') {
+        if(!empty($path)) {
+			$path = str_replace('..', '', htmlentities(trim($path)));
+		}
+		return $path;	
+	}
 }
 new class_fma_shortcode;
 ?>
